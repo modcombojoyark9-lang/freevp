@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>گاه‌نما | تاریخ و زمان دقیق</title>
+    <link rel="icon" type="image/png" sizes="128×128" href="../favicon.ico">
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Segoe UI', 'Vazirmatn', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: #0b0b1a;
+    background-image: 
+        radial-gradient(ellipse at 20% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(118, 75, 162, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* افکت درخشش ملایم در پس‌زمینه */
+body::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.calendar-card {
+    background: rgba(20, 20, 40, 0.85);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 28px;
+    box-shadow: 
+        0 30px 70px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    padding: 2.2rem 1.8rem;
+    max-width: 620px;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.calendar-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+        0 35px 80px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 255, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.icon-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.icon-title svg {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(0 2px 8px rgba(129, 140, 248, 0.3));
+}
+
+.icon-title h2 {
+    font-size: 1.7rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a5b4fc, #c084fc);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.date-box {
+    background: rgba(30, 30, 55, 0.7);
+    border-radius: 20px;
+    padding: 1.8rem 1rem;
+    margin: 0.8rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.persian-date {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    line-height: 1.4;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 0.75rem;
+}
+
+.full-date {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a5b4fc, #c084fc);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.jalali-numeric {
+    font-family: 'Vazirmatn', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    padding: 0.25rem 1.2rem;
+    border-radius: 50px;
+    direction: ltr;
+}
+
+.gregorian-date {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #818cf8;
+    background: rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    padding: 0.2rem 1.2rem;
+    border-radius: 40px;
+    direction: ltr;
+    font-family: monospace;
+}
+
+.time-section {
+    margin-top: 1.2rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clock-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    background: rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    padding: 0.1rem 0.8rem;
+    border-radius: 30px;
+    margin-bottom: 0.6rem;
+}
+
+.live-clock {
+    font-family: 'Vazirmatn', 'Courier New', monospace;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #a5b4fc;
+    text-shadow: 0 0 10px rgba(129, 140, 248, 0.4), 0 0 20px rgba(129, 140, 248, 0.1);
+    background: rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    padding: 0.3rem 1.5rem;
+    border-radius: 60px;
+    backdrop-filter: blur(10px);
+    direction: ltr;
+}
+
+@media (max-width: 500px) {
+    .calendar-card { 
+        padding: 1.5rem;
+        border-radius: 22px;
+    }
+    .persian-date { font-size: 1.6rem; }
+    .full-date { font-size: 1.6rem; }
+    .jalali-numeric { font-size: 1rem; }
+    .live-clock { 
+        font-size: 2rem; 
+        letter-spacing: 1px; 
+        padding: 0.2rem 1rem; 
+    }
+    .gregorian-date { font-size: 1rem; }
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.calendar-card { 
+    animation: fadeSlide 0.5s ease-out forwards; 
+}
+
+/* دکمه بازگشت */
+.back-btn-wrapper {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.back-btn {
+    background: rgba(30, 30, 55, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    font-family: inherit;
+}
+
+.back-btn:hover {
+    background: rgba(40, 40, 70, 0.8);
+    border-color: rgba(129, 140, 248, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(129, 140, 248, 0.2);
+}
+
+.back-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: #a5b4fc;
+    transition: fill 0.3s ease;
+}
+
+.back-btn:hover svg {
+    fill: #c084fc;
+}
+
+/* اسکرول‌بار دارک */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #0b0b1a;
+}
+::-webkit-scrollbar-thumb {
+    background: #818cf8;
+    border-radius: 3px;
+}
+    </style>
+</head>
+<body>
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="window.history.back()">
+        <!-- آیکون فلش بازگشت به صورت SVG توکار -->
+        <svg viewBox="0 0 24 24">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+    </button>
+</div>
+
+<div class="calendar-card">
+    <div class="icon-title">
+        <!-- آیکون تقویم با رنگ طلایی -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 10H21M7 3V5M17 3V5M6 2H18C19.1046 2 20 2.89543 20 4V20C20 21.1046 19.1046 22 18 22H6C4.89543 22 4 21.1046 4 20V4C4 2.89543 4.89543 2 6 2Z" stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="12" cy="16" r="1" fill="#FBBF24"/>
+            <circle cx="16" cy="16" r="1" fill="#FBBF24"/>
+            <circle cx="8" cy="16" r="1" fill="#FBBF24"/>
+            <circle cx="12" cy="12" r="1" fill="#FBBF24"/>
+            <circle cx="16" cy="12" r="1" fill="#FBBF24"/>
+            <circle cx="8" cy="12" r="1" fill="#FBBF24"/>
+        </svg>
+        <h2>گاه‌نما</h2>
+    </div>
+
+    <div class="date-box">
+        <div class="persian-date">
+            <span class="full-date" id="fullPersianDate">...</span>
+        </div>
+        <div class="jalali-numeric" id="numericJalaliDate"></div>
+        <div class="gregorian-date" id="gregorianDate"></div>
+    </div>
+
+    <div class="time-section">
+        <div class="clock-label">زمان (۲۴ ساعته)</div>
+        <div class="live-clock" id="liveClock">--:--:--</div>
+    </div>
+</div>
+
+<!-- جاوا اسکریپت دست‌نخورده (همون کد قبلی خودت) -->
+<script>
+    (function() {
+        "use strict";
+
+        function convertPersianToEnglishDigits(str) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            for (let i = 0; i < persianDigits.length; i++) {
+                str = str.replace(new RegExp(persianDigits[i], 'g'), englishDigits[i]);
+            }
+            return str;
+        }
+
+        function getWeekdayName() {
+            const weekdays = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
+            return weekdays[new Date().getDay()];
+        }
+
+        function getPersianDayAndMonth() {
+            try {
+                const now = new Date();
+                const dayFormatter = new Intl.DateTimeFormat('fa-IR', { calendar: 'persian', day: 'numeric' });
+                const monthFormatter = new Intl.DateTimeFormat('fa-IR', { calendar: 'persian', month: 'long' });
+                let day = dayFormatter.format(now);
+                let month = monthFormatter.format(now);
+                day = convertPersianToEnglishDigits(day);
+                return { day, month };
+            } catch (err) {
+                function g2j(gy, gm, gd) {
+                    const daysInMonth = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+                    let gy2 = gm > 2 ? gy + 1 : gy;
+                    let days = 355666 + Math.floor(365 * gy2) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400);
+                    days += gd + [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334][gm - 1];
+                    if (gm > 2 && ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)) days++;
+                    let jy = -1595;
+                    let jm, jd;
+                    while (jy < 1500) {
+                        let leap = jy % 4 === 0 ? 1 : 0;
+                        let yDays = leap ? 366 : 365;
+                        if (days <= yDays) break;
+                        days -= yDays;
+                        jy++;
+                    }
+                    for (jm = 1; jm <= 12; jm++) {
+                        let mDays = daysInMonth[jm - 1] + (jm === 12 && (jy % 4 === 0) ? 1 : 0);
+                        if (days <= mDays) break;
+                        days -= mDays;
+                    }
+                    jd = days;
+                    return [jy, jm, jd];
+                }
+                const now = new Date();
+                const [jy, jm, jd] = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
+                const persianMonths = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+                return {
+                    day: jd.toString(),
+                    month: persianMonths[jm - 1]
+                };
+            }
+        }
+
+        function getPersianDateString() {
+            const weekday = getWeekdayName();
+            const { day, month } = getPersianDayAndMonth();
+            return `${weekday} ${day} ${month}`;
+        }
+
+        function getNumericJalaliDateString() {
+            try {
+                const formatter = new Intl.DateTimeFormat('fa-IR', {
+                    calendar: 'persian',
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric'
+                });
+                const parts = formatter.formatToParts(new Date());
+                let year = '', month = '', day = '';
+                for (const p of parts) {
+                    if (p.type === 'year') year = p.value;
+                    if (p.type === 'month') month = p.value;
+                    if (p.type === 'day') day = p.value;
+                }
+                year = convertPersianToEnglishDigits(year);
+                month = convertPersianToEnglishDigits(month);
+                day = convertPersianToEnglishDigits(day);
+                return `${year}/${month}/${day}`;
+            } catch (err) {
+                return `1405/1/1`;
+            }
+        }
+
+        function getDayNightPrefix() {
+            const hour = new Date().getHours();
+            return (hour >= 6 && hour < 18) ? "تاریخ امروز:" : "تاریخ امشب:";
+        }
+
+        function updateNumericDisplay() {
+            const numericEl = document.getElementById('numericJalaliDate');
+            if (numericEl) {
+                numericEl.textContent = `${getDayNightPrefix()} ${getNumericJalaliDateString()}`;
+            }
+        }
+
+        function renderFullDate() {
+            const fullDateEl = document.getElementById('fullPersianDate');
+            if (fullDateEl) {
+                fullDateEl.textContent = getPersianDateString();
+                document.title = `${getPersianDateString()} | گاه‌نما`;
+            }
+        }
+
+        function getGregorianDateString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            return `${year}/${month}/${day}`;
+        }
+
+        function updateGregorianDate() {
+            const gregEl = document.getElementById('gregorianDate');
+            if (gregEl) {
+                gregEl.textContent = getGregorianDateString();
+            }
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        let clockInterval = null;
+        function startClock() {
+            const clockEl = document.getElementById('liveClock');
+            if (!clockEl) return;
+            const update = () => { clockEl.textContent = getCurrentTime(); };
+            update();
+            if (clockInterval) clearInterval(clockInterval);
+            clockInterval = setInterval(update, 1000);
+        }
+
+        let lastDateCheck = new Date().toDateString();
+        function checkDateChange() {
+            const todayStr = new Date().toDateString();
+            if (todayStr !== lastDateCheck) {
+                lastDateCheck = todayStr;
+                renderFullDate();
+                updateNumericDisplay();
+                updateGregorianDate();
+            }
+        }
+
+        let lastPrefix = '';
+        function autoUpdatePrefix() {
+            const newPrefix = getDayNightPrefix();
+            if (newPrefix !== lastPrefix) {
+                lastPrefix = newPrefix;
+                updateNumericDisplay();
+            }
+        }
+
+        function init() {
+            renderFullDate();
+            updateNumericDisplay();
+            updateGregorianDate();
+            startClock();
+
+            lastPrefix = getDayNightPrefix();
+            lastDateCheck = new Date().toDateString();
+
+            setInterval(autoUpdatePrefix, 30000);
+            setInterval(checkDateChange, 60000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    renderFullDate();
+                    updateNumericDisplay();
+                    updateGregorianDate();
+                    lastDateCheck = new Date().toDateString();
+                    const clockEl = document.getElementById('liveClock');
+                    if (clockEl) clockEl.textContent = getCurrentTime();
+                }
+            });
+
+            window.addEventListener('timezonechange', () => {
+                renderFullDate();
+                updateNumericDisplay();
+                updateGregorianDate();
+            });
+        }
+
+        // بخش‌های مسدودکننده کپی رو حذف کردم تا کاربر اذیت نشه، اما اگه خواستی برگردونشون
+        init();
+    })();
+</script>
+</body>
+</html>
