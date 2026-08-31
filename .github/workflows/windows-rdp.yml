@@ -1,3 +1,5 @@
+name: Windows Cloud RDP
+
 on:
   workflow_dispatch:
 
