@@ -3,38 +3,96 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ø¯Ø§Ù†Ù„ÙˆØ¯ Ù…ÙˆØ¯ Ùˆ Ù¾Ù„Ø§Ú¯ÛŒÙ† Ø§Ø² Modrinth</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <title>PackDrop - آپلود ریسورس‌پک ماینکرفت</title>
+    <!-- فونت از Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <!-- Font Awesome برای آیکون‌ها -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <!-- پس‌زمینه انیمیشنی -->
+    <div id="particles-bg"></div>
+
     <div class="container">
-        <header>
-            <h1>ðŸŽ® Ø¬Ø³ØªØ¬ÙˆÛŒ Ù…Ø­ØªÙˆØ§ÛŒ Ù…Ø§ÛŒÙ†Ú©Ø±ÙØª</h1>
-            <p>Ù…ÙˆØ¯ØŒ Ù¾Ù„Ø§Ú¯ÛŒÙ†ØŒ Ø´ÛŒØ¯Ø±ØŒ Ø¯ÛŒØªØ§Ù¾Ú© Ùˆ Ù…ÙˆØ¯Ù¾Ú© Ø§Ø² <a href="https://modrinth.com" target="_blank">Modrinth</a></p>
+        <!-- هدر -->
+        <header class="glow-header">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <h1>Pack<span>Drop</span></h1>
+            </div>
+            <p class="subtitle">ریسورس‌پک رو آپلود کن، لینک مستقیم بگیر</p>
         </header>
 
-        <section class="search-section">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Ù…Ø«Ù„Ø§Ù‹: sodium, optifine, shader..." />
-                <button id="searchBtn">Ø¬Ø³ØªØ¬Ùˆ</button>
+        <!-- بخش آمار -->
+        <section class="stats">
+            <div class="stat-item">
+                <i class="fas fa-file-archive"></i>
+                <span id="fileCount">۰</span>
+                <small>ریسورس‌پک آپلود شده</small>
             </div>
+        </section>
 
-            <div class="filters">
-                <select id="typeFilter">
-                    <option value="">Ù‡Ù…Ù‡ Ø§Ù†ÙˆØ§Ø¹</option>
-                    <option value="mod">Ù…ÙˆØ¯</option>
-                    <option value="plugin">Ù¾Ù„Ø§Ú¯ÛŒÙ†</option>
-                    <option value="shader">Ø´ÛŒØ¯Ø±</option>
-                    <option value="resourcepack">Ø±ÛŒØ³ÙˆØ±Ø³ Ù¾Ú©</option>
-                    <option value="datapack">Ø¯ÛŒØªØ§ Ù¾Ú©</option>
-                    <option value="modpack">Ù…ÙˆØ¯Ù¾Ú©</option>
-                </select>
+        <!-- بخش آپلود -->
+        <section class="upload-area" id="uploadArea">
+            <div class="upload-content">
+                <i class="fas fa-cloud-upload-alt fa-4x"></i>
+                <p>فایل ZIP را اینجا رها کنید</p>
+                <span class="hint">یا کلیک کنید تا انتخاب کنید · حداکثر: ۴۰ مگابایت</span>
+                <input type="file" id="fileInput" accept=".zip" />
+            </div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+                <span class="progress-text" id="progressText">۰٪</span>
+            </div>
+        </section>
 
-                <select id="loaderFilter">
-                    <option value="">Ù‡Ù…Ù‡ Ù„ÙˆØ¯Ø±Ù‡Ø§</option>
-                    <option value="fabric">Fabric</option>
-                    <option value="forge">Forge</option>
-                    <option value="neoforge">NeoForge</option>
+        <!-- بخش اطلاعات فایل -->
+        <section class="file-info" id="fileInfo">
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-link"></i>
+                    <span class="label">لینک مستقیم</span>
+                    <div class="value-wrapper">
+                        <input type="text" id="directLink" readonly />
+                        <button class="copy-btn" data-target="directLink"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span class="label">هش SHA-1</span>
+                    <div class="value-wrapper">
+                        <input type="text" id="shaHash" readonly />
+                        <button class="copy-btn" data-target="shaHash"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span class="label">تاریخ آپلود</span>
+                    <span id="uploadDate" class="value">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- لیست فایل‌های قبلی -->
+        <section class="file-list">
+            <h2><i class="fas fa-list-ul"></i> ریسورس‌پک‌های آپلود شده</h2>
+            <div id="fileListContainer">
+                <p class="empty-message">هیچ فایلی آپلود نشده است.</p>
+            </div>
+        </section>
+
+        <!-- فوتر -->
+        <footer>
+            <p>ساخته شده با <i class="fas fa-heart" style="color: #ff2d75;"></i> برای ادمین‌های سرور ماینکرفت</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>                    <option value="neoforge">NeoForge</option>
                     <option value="bukkit">Bukkit</option>
                     <option value="spigot">Spigot</option>
                     <option value="paper">Paper</option>
