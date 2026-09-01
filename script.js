@@ -1,40 +1,206 @@
-// ================================================
-// تنظیمات اولیه - این مقادیر را بر اساس مخزن خود ویرایش کنید
-// ================================================
-const CONFIG = {
-    owner: 'modcombojoyark9-lang',      // نام کاربری گیت‌هاب خود را وارد کنید
-    repo: 'upload',             // نام مخزن خود را وارد کنید
-    folderPath: 'packs/',               // مسیر پوشه ذخیره فایل‌ها
-    branch: 'main',                     // شاخه مخزن (main یا master)
-    maxFileSize: 40 * 1024 * 1024,      // حداکثر حجم: ۴۰ مگابایت
-    get token() {
-        // توکن را از localStorage دریافت می‌کنیم
-        return localStorage.getItem('github_token') || '';
+// ===== دریافت عناصر DOM =====
+const uploadArea = document.getElementById("uploadArea");
+const fileInput = document.getElementById("fileInput");
+const fileItems = document.getElementById("fileItems");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+const progressContainer = document.getElementById("progressContainer");
+
+// محدودیت‌ها
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 مگابایت
+const MAX_FILES = 5;
+
+// ===== رویداد کلیک روی ناحیه آپلود =====
+uploadArea.addEventListener("click", () => {
+    fileInput.click();
+});
+
+// ===== رویداد تغییر فایل (انتخاب از طریق دکمه) =====
+fileInput.addEventListener("change", (e) => {
+    const files = e.target.files;
+    handleFiles(files);
+    fileInput.value = ""; // ریست کردن input
+});
+
+// ===== رویدادهای Drag & Drop =====
+uploadArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadArea.classList.add("dragover");
+});
+
+uploadArea.addEventListener("dragleave", () => {
+    uploadArea.classList.remove("dragover");
+});
+
+uploadArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("dragover");
+    const files = e.dataTransfer.files;
+    handleFiles(files);
+});
+
+// ===== تابع اصلی پردازش فایل‌ها =====
+function handleFiles(files) {
+    // تبدیل FileList به آرایه برای راحتی
+    const fileArray = Array.from(files);
+
+    // بررسی تعداد فایل‌ها
+    const currentCount = document.querySelectorAll("#fileItems li").length;
+    if (currentCount + fileArray.length > MAX_FILES) {
+        alert(`حداکثر ${MAX_FILES} فایل می‌توانید آپلود کنید.`);
+        return;
     }
-};
 
-// ================================================
-// مدیریت وضعیت برنامه
-// ================================================
-const state = {
-    fileList: [],          // لیست فایل‌های آپلود شده
-    isUploading: false,    // وضعیت آپلود
-    uploadProgress: 0,     // درصد پیشرفت
-    currentFile: null      // فایل در حال آپلود
-};
+    // بررسی حجم هر فایل
+    for (const file of fileArray) {
+        if (file.size > MAX_FILE_SIZE) {
+            alert(`فایل "${file.name}" بزرگتر از ۱۰ مگابایت است.`);
+            return;
+        }
+    }
 
-// ================================================
-// عناصر DOM
-// ================================================
-const elements = {
-    uploadArea: document.getElementById('uploadArea'),
-    fileInput: document.getElementById('fileInput'),
-    progressBar: document.getElementById('progressBar'),
-    progressFill: document.getElementById('progressFill'),
-    progressText: document.getElementById('progressText'),
-    fileInfo: document.getElementById('fileInfo'),
-    directLink: document.getElementById('directLink'),
-    shaHash: document.getElementById('shaHash'),
+    // شبیه‌سازی آپلود برای هر فایل
+    fileArray.forEach((file, index) => {
+        simulateUpload(file, index);
+    });
+}
+
+// ===== تابع شبیه‌سازی آپلود =====
+function simulateUpload(file, index) {
+    // ایجاد آیتم در لیست
+    const li = document.createElement("li");
+    li.innerHTML = `
+        <div class="file-info">
+            <span class="file-name">${file.name}</span>
+            <span class="file-size">${formatFileSize(file.size)}</span>
+        </div>
+        <span class="file-status status-pending">در حال آپلود...</span>
+        <button class="delete-btn" title="حذف">✕</button>
+    `;
+    fileItems.appendChild(li);
+
+    // دریافت المان‌های داخل آیتم
+    const statusEl = li.querySelector(".file-status");
+    const deleteBtn = li.querySelector(".delete-btn");
+
+    // ===== حذف فایل =====
+    deleteBtn.addEventListener("click", () => {
+        li.remove();
+        updateProgress();
+    });
+
+    // ===== شبیه‌سازی آپلود با نوار پیشرفت =====
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 15 + 5;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+
+            // آپلود کامل شد
+            statusEl.textContent = "✅ آپلود شد";
+            statusEl.className = "file-status status-success";
+
+            // ذخیره در localStorage (شبیه‌سازی دیتابیس)
+            saveFileToLocal(file.name, file.size);
+
+            // حذف دکمه حذف بعد از آپلود (اختیاری)
+            // deleteBtn.style.display = "none";
+        } else {
+            statusEl.textContent = `⏳ ${Math.round(progress)}%`;
+        }
+
+        // به‌روزرسانی نوار پیشرفت کلی
+        updateProgress();
+    }, 200);
+
+    // ذخیره interval برای امکان لغو (اختیاری)
+    li.dataset.interval = interval;
+}
+
+// ===== به‌روزرسانی نوار پیشرفت کلی =====
+function updateProgress() {
+    const allItems = document.querySelectorAll("#fileItems li");
+    const total = allItems.length;
+
+    if (total === 0) {
+        progressContainer.style.display = "none";
+        progressBar.style.width = "0%";
+        progressText.textContent = "۰%";
+        return;
+    }
+
+    progressContainer.style.display = "block";
+
+    let done = 0;
+    allItems.forEach((li) => {
+        const status = li.querySelector(".file-status");
+        if (status.classList.contains("status-success")) {
+            done++;
+        }
+    });
+
+    const percent = Math.round((done / total) * 100);
+    progressBar.style.width = percent + "%";
+    progressText.textContent = percent + "%";
+}
+
+// ===== ذخیره فایل در localStorage =====
+function saveFileToLocal(name, size) {
+    let files = JSON.parse(localStorage.getItem("uploadedFiles")) || [];
+    files.push({
+        name: name,
+        size: size,
+        date: new Date().toLocaleString("fa-IR"),
+    });
+    localStorage.setItem("uploadedFiles", JSON.stringify(files));
+}
+
+// ===== بارگذاری فایل‌های ذخیره شده =====
+function loadSavedFiles() {
+    const files = JSON.parse(localStorage.getItem("uploadedFiles")) || [];
+    files.forEach((file) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+            <div class="file-info">
+                <span class="file-name">${file.name}</span>
+                <span class="file-size">${formatFileSize(file.size)} • ${file.date}</span>
+            </div>
+            <span class="file-status status-success">✅ آپلود شد</span>
+            <button class="delete-btn" title="حذف">✕</button>
+        `;
+
+        // دکمه حذف از localStorage
+        const deleteBtn = li.querySelector(".delete-btn");
+        deleteBtn.addEventListener("click", () => {
+            removeFileFromLocal(file.name);
+            li.remove();
+            updateProgress();
+        });
+
+        fileItems.appendChild(li);
+    });
+    updateProgress();
+}
+
+// ===== حذف از localStorage =====
+function removeFileFromLocal(name) {
+    let files = JSON.parse(localStorage.getItem("uploadedFiles")) || [];
+    files = files.filter((f) => f.name !== name);
+    localStorage.setItem("uploadedFiles", JSON.stringify(files));
+}
+
+// ===== نمایش حجم فایل به صورت خوانا =====
+function formatFileSize(bytes) {
+    if (bytes === 0) return "۰ بایت";
+    const k = 1024;
+    const sizes = ["بایت", "کیلوبایت", "مگابایت", "گیگابایت"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(1) + " " + sizes[i];
+}
+
+// ===== بارگذاری اولیه =====
+loadSavedFiles();    shaHash: document.getElementById('shaHash'),
     uploadDate: document.getElementById('uploadDate'),
     fileCount: document.getElementById('fileCount'),
     fileListContainer: document.getElementById('fileListContainer')
